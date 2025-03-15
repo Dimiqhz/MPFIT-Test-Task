@@ -20,11 +20,22 @@ class OrderController extends Controller
      *
      * @return \Illuminate\View\View
      */
-    public function index()
+    public function index(Request $request)
     {
-        $orders = Order::with('product')->get();
+        // Инициализируем запрос с подгрузкой связанного товара
+        $query = Order::with('product');
+
+        // Если передан параметр для фильтрации по статусу заказа
+        if ($request->has('status')) {
+            $query->where('status', $request->get('status'));
+        }
+
+        // Получаем заказы с пагинацией (10 заказов на странице)
+        $orders = $query->paginate(10);
+
         return view('orders.index', compact('orders'));
     }
+
 
     /**
      * Показывает форму для создания нового заказа

@@ -20,9 +20,19 @@ class ProductController extends Controller
      *
      * @return \Illuminate\View\View
      */
-    public function index()
+    public function index(Request $request)
     {
-        $products = Product::with('category')->get();
+        // Инициализация запроса с подгрузкой категории
+        $query = Product::with('category');
+
+        // Если передан параметр для фильтрации по категории
+        if ($request->has('category')) {
+            $query->where('category_id', $request->get('category'));
+        }
+
+        // Получаем товары с пагинацией (10 товаров на странице)
+        $products = $query->paginate(10);
+
         return view('products.index', compact('products'));
     }
 
