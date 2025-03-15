@@ -26,5 +26,5 @@
 1. **Клонируйте репозиторий:**
 
    ```bash
-   git clone <URL репозитория>
-   cd myproject
+   git clone https://github.com/Dimiqhz/MPFIT-Test-Task.git
+   cd MPFIT-Test-Task
