@@ -7,38 +7,36 @@ use App\Http\Requests\OrderStatusUpdateRequest;
 use App\Models\Order;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log; // Подключаем логгер
 
 /**
  * Class OrderController
  *
- * Контроллер для управления заказами
+ * Контроллер для управления заказами.
  */
 class OrderController extends Controller
 {
     /**
-     * Отображает список заказов с вычислением итоговой цены
+     * Отображает список заказов с вычислением итоговой цены.
      *
      * @return \Illuminate\View\View
      */
     public function index(Request $request)
     {
-        // Инициализируем запрос с подгрузкой связанного товара
         $query = Order::with('product');
 
-        // Если передан параметр для фильтрации по статусу заказа
+        // Фильтрация по статусу заказа, если передан параметр
         if ($request->has('status')) {
             $query->where('status', $request->get('status'));
         }
 
-        // Получаем заказы с пагинацией (10 заказов на странице)
+        // Пагинация: 10 заказов на страницу
         $orders = $query->paginate(10);
-
         return view('orders.index', compact('orders'));
     }
 
-
     /**
-     * Показывает форму для создания нового заказа
+     * Показывает форму для создания нового заказа.
      *
      * @return \Illuminate\View\View
      */
@@ -49,20 +47,21 @@ class OrderController extends Controller
     }
 
     /**
-     * Сохраняет новый заказ в базе данных
+     * Сохраняет новый заказ в базе данных.
      *
      * @param OrderStoreRequest $request
      * @return \Illuminate\Http\RedirectResponse
      */
     public function store(OrderStoreRequest $request)
     {
-        Order::create($request->validated());
+        $order = Order::create($request->validated());
+        Log::info('Заказ создан', ['order_id' => $order->id, 'buyer' => $order->buyer_full_name]);
         return redirect()->route('orders.index')
                          ->with('success', 'Заказ успешно создан');
     }
 
     /**
-     * Отображает детальную информацию о заказе с возможностью смены статуса
+     * Отображает детальную информацию о заказе с возможностью смены статуса.
      *
      * @param Order $order
      * @return \Illuminate\View\View
@@ -74,7 +73,7 @@ class OrderController extends Controller
     }
 
     /**
-     * Обновляет статус заказа (на 'new' или 'completed')
+     * Обновляет статус заказа (на 'new' или 'completed').
      *
      * @param OrderStatusUpdateRequest $request
      * @param Order $order
@@ -83,6 +82,7 @@ class OrderController extends Controller
     public function updateStatus(OrderStatusUpdateRequest $request, Order $order)
     {
         $order->update($request->validated());
+        Log::info('Статус заказа обновлён', ['order_id' => $order->id, 'status' => $order->status]);
         return redirect()->route('orders.show', $order)
                          ->with('success', 'Статус заказа обновлён');
     }
